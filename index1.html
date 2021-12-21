@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>DSM</title>
+    <link rel="stylesheet" type="text/css" href="styles/Styles.css">
+    <script type="text/javascript" language="javascript">
+
+
+        function setPageSize(width, height) {
+            document.getElementsByTagName("body")[0].style.width = width + "px";
+            document.getElementsByTagName("body")[0].style.height = height + "px";
+            if (width == 954) {
+								document.getElementsByClassName('broilerimg')[0].style.minHeight = '295px';
+								document.getElementsByClassName('broilerimg')[0].style.backgroundSize = '100% 295px';								
+                //document.getElementById('img').style.height = '320px';
+                document.getElementById('dropdown').style.height = '320px';
+            } else {
+								document.getElementsByClassName('broilerimg')[0].style.minHeight = '200px';
+								document.getElementsByClassName('broilerimg')[0].style.backgroundSize = '100% 200px';	
+                //document.getElementById('img').style.height = '220px';
+                document.getElementById('dropdown').style.height = '220px';
+            }
+        }
+
+
+
+        function ForCalculation(value) {
+            value = value.replace(" ", "");
+            value = value.replace(",", "");
+            return value.replace(/\s/g, '');
+        }
+        function addSeperators(nStr) {
+
+            nStr = nStr.replace(/\s/g, '');
+            nStr += '';
+            var x = nStr.split('.');
+            var x1 = x[0];
+            var x2 = x.length > 1 ? '.' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1)) {
+                x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+            }
+            return x1 + x2;
+        }
+        function ForDisplay(ele) {
+            var value = "";
+            value = ele.value;
+            value = value.replace(" ", "");
+            value = value.replace(",", "");
+            value = value.replace(/\s/g, '');
+            //            X = value.split(".")
+            //            value = X[0];
+            //            X1 = X.length > 1 ? '.' + x[1] : '';
+            //            var retval = "";
+            //            var intval = 0;
+            //            var flag = false;
+            //            var count = 0;
+            //            for (var i = value.length - 1; i >= 0; i--) {
+            //                if (!flag && count == 3) {
+            //                    retval = value[i] + " " + retval;
+            //                    count = 0;
+            //                    flag = true;
+            //                }
+            //                else if (flag && count == 1) {
+            //                    retval = value[i] + " " + retval;
+            //                    count = 0;
+
+            //                }
+            //                else {
+            //                    retval = value[i] + retval;
+            //                    count++;
+            //                }
+            //            }
+            //            retval = retval + X1;
+            //            ele.value = retval;
+            ele.value = addSeperators(value);
+            subTotal();
+        }
+        function selectoptions() {
+            var e = document.getElementById("ddlCarophyll");
+            var strUser = e.options[e.selectedIndex].value;
+            if(strUser != 0){
+                document.getElementById("dropdown").style.display = "none";
+                document.getElementById("actions").style.display = "";
+                document.getElementById("pricecal").style.display = "";
+                var split = strUser.split("/");
+                document.getElementById("source").innerHTML = split[0];
+                document.getElementById("color").innerHTML = split[2];
+                document.getElementById("claim").innerHTML = split[1];
+                document.getElementById("stability").value = split[5];
+                document.getElementById("crprice").innerHTML = "";
+								document.getElementById("savings").innerHTML = "";
+                document.getElementById("price").value = split[4];
+                document.getElementById("availabiliy").innerHTML = split[3];
+								document.getElementById("dsmprice").value = split[6];
+                document.getElementById('crprice_td').classList.add('red');
+                document.getElementById('crprice_td').classList.remove('yellow');
+                if(split[2] == 'Yellow') {
+                    document.getElementById('crprice_td').classList.add('yellow'); 
+                    document.getElementById('crprice_td').classList.remove('red');
+                }
+								if(split[7] == 'g') {
+										document.getElementById("priceLabel").innerHTML = "Price/g";
+								} else {
+										document.getElementById("priceLabel").innerHTML = "Price/Kg";
+								}
+				
+    
+                var Product_value = (split[5] * split[3] * split[1]) / 100000;
+								var Cr_price = roundNumber(split[4] / Product_value, 2);
+								var savings = roundNumber((Cr_price - split[6]),2)
+								document.getElementById("crprice").innerHTML = Cr_price;
+								document.getElementById("savings").innerHTML = savings;
+                //document.getElementById("crprice").innerHTML = roundNumber(split[4] / Product_value, 2);
+            }
+        }
+        function resetvalues() {
+            var e = document.getElementById("ddlCarophyll");
+            var strUser = e.options[e.selectedIndex].value;
+            var split = strUser.split("/");
+            document.getElementById("stability").value = split[5];
+            document.getElementById("price").value = split[4];
+						document.getElementById("dsmprice").value = split[6];
+
+            var Product_value = (document.getElementById("stability").value * split[3] * document.getElementById("claim").innerHTML) / 100000;
+						var CrCy_price = roundNumber(document.getElementById("price").value / Product_value, 2);
+						var savings = roundNumber((CrCy_price - split[6]),2);
+            document.getElementById("crprice").innerHTML = CrCy_price;
+						document.getElementById("savings").innerHTML = savings;
+            //document.getElementById("crprice").innerHTML = roundNumber(document.getElementById("price").value / Product_value, 2);
+            //document.getElementById("crprice").value = (document.getElementById("stability").value * document.getElementById("price").value * document.getElementById("claim").innerHTML) / 100000;
+        }
+        function back() {
+            document.getElementById("dropdown").style.display = "";
+            document.getElementById("actions").style.display = "none";
+            document.getElementById("pricecal").style.display = "none";
+            document.getElementById("ddlCarophyll").value = "0";
+        }
+        function subTotal() {
+            var stability = ForCalculation(document.getElementById("stability").value);
+            var Price = ForCalculation(document.getElementById("price").value);
+						var dsmPrice = ForCalculation(document.getElementById("dsmprice").value);
+
+            if ((isNaN(stability) || (stability <= 0))
+            && (isNaN(Price) || (Price <= 0))) {
+                resetvalues();
+            } else if(stability > 100) {
+                document.getElementById("crprice").innerHTML = 'Stability invalid';
+            }
+            else {
+                var e = document.getElementById("ddlCarophyll");
+                var strUser = e.options[e.selectedIndex].value;
+                var split = strUser.split("/");
+
+                var Product_value = (stability * split[3] * document.getElementById("claim").innerHTML) / 100000;
+                if (Product_value > 0)
+								{
+									var CrCy_price = roundNumber(Price / Product_value, 2);
+									var Dsm_price = dsmPrice; //split[6];
+										document.getElementById("crprice").innerHTML = CrCy_price;
+									document.getElementById("savings").innerHTML = roundNumber(CrCy_price - Dsm_price,2);
+									
+									//document.getElementById("crprice").innerHTML = roundNumber(Price / Product_value, 2);
+								} 
+                else
+								{
+									document.getElementById("crprice").innerHTML = 0;
+									document.getElementById("savings").innerHTML = 0;
+								}
+                
+                //                document.getElementById("crprice").value = (document.getElementById("stability").value * document.getElementById("price").value * document.getElementById("claim").innerHTML) / 100000;
+            }
+
+        }
+        function roundNumber(num, dec) {
+            var result = Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
+            return result;
+        }
+        //        var id;
+        //        function removecommas(id) {
+        //            var textbox = document.getElementById(id);
+        //            var text = textbox.value;
+        //            textbox.value = text.replace(',', ' '); ;
+
+        //        }
+    </script>
+    <script type="text/javascript">
+        function isNumberKey(evt) {
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if ((charCode >= 48 && charCode <= 57) || charCode == 45 || charCode == 46 || charCode == 8) {
+                return true;
+            }
+            return false;
+        }
+    </script>
+</head>
+<body onload = "setPageSize(954, 725)">
+    <div class="main">
+        <div class="container">
+            <div class="header">
+                <div class="headleft">
+                    <a href="javascript:void();">
+                        <img src="images/leftlogo.png" alt="Hy.D" width="150" height="32" /></a>
+                </div>
+                <div class="headright">
+                    <a href="javascript:void();">
+                        <img src="images/rightlogo.png" alt="DSM" />
+                    </a>
+                </div>
+            </div>
+            <div class="contentmain">
+                <div class="headingtext">
+                    &nbsp;</div>
+                <div class="navigation">
+                    <ul>
+                        <li class="desel"><a href="index.html">Egg</a> </li>
+                        <li class="sel" style="border-radius: 0px 8px 0 0; -webkit-border-radius: 0px 8px 0 0;">
+                            <a href="index1.html">Broiler</a></li>
+                    </ul>
+                </div>
+                <div class="middlecontent">
+                    <div class="middlecontenthead">
+                        <h1>
+                            Carophyll<sup>&reg;</sup> Value Calculator</h1>
+                        <div id="actions" style="display: none;">
+                            <span class="back"><a href="javascript:void(0);" onClick="back();">Back </a></span>
+                            <span class="reset"><a href="javascript:void(0);" onClick="resetvalues();">
+                                <img src="images/reset.png" alt="Reset" />
+                            </a></span>
+                        </div>
+                    </div>
+                    <div class="dropdown" id="dropdown">
+                    <p>Insert the price and the claim of the competitive product and you will get the higher price at what your customer will still save while using Carophyll Products. Stability and bioefficacy are considered for the calculations.</p>
+                        <div class="formfield">
+                            <select id="ddlCarophyll" onChange="selectoptions();">
+                                <option value="0">Select Source</option>
+                                <option value="Canthaxanthin High Quality/10/Red/100/80/95/80">Canthaxanthin High Quality</option>
+                                <option value="Canthaxanthin Medium Quality/10/Red/80/80/80/80">Canthaxanthin Medium Quality</option>
+                                <!--<option value="Citranaxanthin/10/Red/0//90/80">Citranaxanthin</option>
+                                <option value="Paprika/2/Red/0//48/80">Paprika</option>-->
+                                <option value="Apo-Ester High Quality/10/Yellow/100/80/94/80">Apo-Ester High Quality</option>
+                                <option value="Apo-Ester Medium Quality/10/Yellow/74/60/88/80">Apo-Ester Medium Quality</option>
+                                <option value="Tagetes Extract SU/2/Yellow/50/5/80/80">Tagetes Extract SU</option>
+                                <option value="Tagetes Extract SSU/100/Yellow/50/0.2/80/80/g">Tagetes Extract SSU</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="middleextravalue" style="display: none; min-height: 300px;" id="pricecal">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td height="45" bgcolor="#EB6909" style="width: 11%; padding-left: 2%;" class="btlr8"><div align="left" class="style4 padleft">Color</div></td>
+																						<td height="45" bgcolor="#EB6909" class="blr8" style="width: 80%;"><div align="left" class="style4 padleft">Source</div></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+							
+							<tr>
+                                <td style="padding-top: 5px;">
+                                    <div style="">
+                                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td height="45" bgcolor="#fff" style="width: 11%; padding-left: 2%; font-weight:bold;"><div align="left" class="padleft" id="color"></div></td>
+																								<td height="45" bgcolor="#fff" style="width: 80%; font-weight:bold;"><div align="left" class="padleft" id="source"></div></td>
+                                            </tr>
+      
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+							
+							
+							<tr>
+								<td style="padding-top: 5px;"><div><table width="100%" border="0" cellspacing="0" cellpadding="0">
+							<tr>
+								<td height="45" bgcolor="#EB6909" style="width: 11%; padding-left: 2%;" ><div  align="left" class="style4 padleft" style="" id="priceLabel">Price/Kg</div></td>
+								<td height="45" bgcolor="#EB6909" style="width: 7%"><div align="left" class="style4 padleft">Claim %</div></td>
+								<td height="45" bgcolor="#EB6909" style="width: 11%;"><div align="center" class="style4">Stability %</div></td>
+								<td height="45" bgcolor="#EB6909" style="width: 15%;"><div align="center" class="style4">Bioavailability %</div></td>
+								<td height="45" bgcolor="#EB6909"  style="width: 23%;"><div align="center" class="style4">Competitive CR/CY price</div></td>
+								<td height="45" bgcolor="#EB6909" style="width: 13%;"><div align="center" class="style4">DSM price/Kg</div></td>
+								<td height="45" bgcolor="#EB6909" style="width: 11%; padding-right: 1%;"><div align="center" class="style4">Savings/Kg</div></td>
+							</tr>
+						</table></div></td>
+						</tr>
+						
+						<tr>
+							<td style="padding-top: 5px;"><div>
+						  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+							<tr>
+							  <td height="45" bgcolor="#fff" style="width: 11%; padding-left: 2%;"><div class="padleft" align="left">
+								  <input onKeyPress="return isNumberKey(event)" type="tel" id="price" onKeyUp="ForDisplay(this);" />
+								</div>
+								</td>
+							  <td height="45" bgcolor="#fff" style="width: 7%;"><div align="left" class="padleftdata" id="claim"> </div></td>
+							  <td height="45" bgcolor="#fff" style="width: 11%;"><div align="center" class="">
+								  <input onKeyPress="return isNumberKey(event)" type="tel" id="stability" onKeyUp="ForDisplay(this);" />
+								</div></td>
+							  <td height="45" bgcolor="#fff" style="width: 15%;"><div align="center" id="availabiliy" class=""> </div></td>
+							  <td height="45" bgcolor="#fff" style="width: 23%;" ><div align="center"id="crprice_td" class="red">
+								  <label id="crprice" style="color:#fff;font-weight:bold;"> </label>
+								  
+								</div></td>
+								<td height="45" bgcolor="#fff" style="width: 11%;">
+										<div align="center" class="">
+											<input onKeyPress="return isNumberKey(event)" type="tel" id="dsmprice" onKeyUp="ForDisplay(this);" />
+										</div>
+									</td>
+								<!--<td height="45" bgcolor="#fff" style="width: 13%;" >
+									<div align="center"id="dsmprice_td" class="darkash">
+											<label id="dsmprice" style="color:#fff;font-weight:bold;"> </label>
+									</div>
+								</td>-->
+								<td height="45" bgcolor="#fff" style="width: 11%; padding-right:1%;" ><div align="center"id="savings_td" class="yellow">
+								  <label id="savings" style="color:#fff;font-weight:bold;"> </label>
+								  
+								</div></td>		
+							 	
+							</tr>
+						  </table>
+						</div></td>
+					</tr>
+						</table>
+						
+						<div class="broilerimg">
+							<div class="carmain">
+								<div class="arrow"> &nbsp; </div>
+								<div class="carprice"> Below this price the customer saves money when chosing the Carophyll product </div>
+							</div>
+							<!--<div class="img" >
+								<img src="images/mexicanboiledeggs-edited.jpg" alt="" id="img" />  
+							</div>-->
+						</div>
+						
+					 <!--div class="img" >
+						<img src="images/chicken.jpg" alt="" id="img" />  </div-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="hdn_CanthaxanthinHighQuality" value="100" />
+    <input type="hidden" id="hdn_CanthaxanthinMediumQuality" value="80" />
+    <input type="hidden" id="hdn_Citranaxanthin" value="0" />
+    <input type="hidden" id="hdn_Paprika" value="0" />
+    <input type="hidden" id="hdn_Apo-EsterHighQuality" value="100" />
+    <input type="hidden" id="hdn_Apo-EsterMediumQuality" value="74" />
+    <input type="hidden" id="hdn_Tagetes" value="50" />
+</body>
+</html>
